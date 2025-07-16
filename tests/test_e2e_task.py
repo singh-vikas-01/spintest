@@ -84,6 +84,7 @@ async def test_e2e_task_run_failure_assertion(valid_task, url):
 @pytest.mark.asyncio
 async def test_e2e_task_run_failure_exception(valid_task, url):
     valid_task["target"].side_effect = Exception("Test exception")
+    valid_task["target"].__name__ = "mock_target"
     with patch("spintest.validator.input_validator_e2e_task", return_value=valid_task):
         task = E2ETask(url, valid_task)
         response = await task.run()
