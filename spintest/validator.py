@@ -23,12 +23,15 @@ TASK_SCHEMA = Schema(
             Optional("expected_match", default="strict"): Or("partial", "strict"),
         },
         Optional("target"): callable,  # For E2ETask
-        # inputes dict then convet to kwargs (better for end user) or better to pass as dict -no : 
-        Optional("fail_on"): [{
-            Optional("code"): int,
-            Optional("body"): Or(dict, str),
-            Optional("expected_match", default="strict"): Or("partial", "strict"),
-        }],
+        # inputes dict then convet to kwargs (better for end user)
+        # or better to pass as dict -no :
+        Optional("fail_on"): [
+            {
+                Optional("code"): int,
+                Optional("body"): Or(dict, str),
+                Optional("expected_match", default="strict"): Or("partial", "strict"),
+            }
+        ],
         Optional("retry", default=0): int,
         Optional("delay", default=1): int,
         Optional("ignore", default=False): bool,
@@ -42,6 +45,7 @@ def input_validator(input, input_schema) -> typing.Optional[dict]:
         return input_schema.validate(input)
     except SchemaError:
         return None
+
 
 def input_validator_e2e_task(task):
     if task.get("type") == "e2e":

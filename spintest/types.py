@@ -3,6 +3,7 @@
 import jinja2
 import json
 
+
 class JSONValue(object):
     """A base class that implements type-aware serialization values."""
 

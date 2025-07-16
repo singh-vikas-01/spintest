@@ -2,6 +2,7 @@ import pytest
 from spintest.e2e_task import E2ETask
 from unittest.mock import AsyncMock, patch
 
+
 @pytest.fixture
 def valid_task():
     return {
@@ -11,8 +12,10 @@ def valid_task():
         "ignore": False,
     }
 
+
 def test_valid_task_target_callable(valid_task):
     assert callable(valid_task["target"])
+
 
 @pytest.fixture
 def invalid_task():
@@ -23,9 +26,11 @@ def invalid_task():
         "ignore": False,
     }
 
+
 @pytest.fixture
 def url():
     return "http://example.com"
+
 
 def test_e2e_task_initialization(valid_task, url):
     task = E2ETask(url, valid_task)
@@ -36,6 +41,7 @@ def test_e2e_task_initialization(valid_task, url):
     assert task.ignore == valid_task["ignore"]
     assert task.response is None
 
+
 def test_e2e_task_response_success(valid_task, url):
     task = E2ETask(url, valid_task)
     response = task._response("SUCCESS", "Task executed successfully.")
@@ -44,6 +50,7 @@ def test_e2e_task_response_success(valid_task, url):
     assert response["name"] == valid_task["name"]
     assert response["url"] == url
 
+
 def test_e2e_task_response_failure(valid_task, url):
     task = E2ETask(url, valid_task)
     response = task._response("FAILURE", "Task failed.")
@@ -51,6 +58,7 @@ def test_e2e_task_response_failure(valid_task, url):
     assert response["message"] == "Task failed."
     assert response["name"] == valid_task["name"]
     assert response["url"] == url
+
 
 @pytest.mark.asyncio
 async def test_e2e_task_run_success(valid_task, url):
@@ -62,6 +70,7 @@ async def test_e2e_task_run_success(valid_task, url):
         assert response["message"] == "Task executed successfully."
         assert response["duration_sec"] is not None
 
+
 @pytest.mark.asyncio
 async def test_e2e_task_run_failure_assertion(valid_task, url):
     valid_task["target"].side_effect = AssertionError("Test assertion error")
@@ -71,6 +80,7 @@ async def test_e2e_task_run_failure_assertion(valid_task, url):
         assert response["status"] == "FAILURE"
         assert "assertion error" in response["message"]
 
+
 @pytest.mark.asyncio
 async def test_e2e_task_run_failure_exception(valid_task, url):
     valid_task["target"].side_effect = Exception("Test exception")
@@ -79,6 +89,7 @@ async def test_e2e_task_run_failure_exception(valid_task, url):
         response = await task.run()
         assert response["status"] == "ERROR"
         assert "encountered an error" in response["message"]
+
 
 @pytest.mark.asyncio
 async def test_e2e_task_initialization_invalid_task(invalid_task, url):

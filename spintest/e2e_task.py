@@ -48,7 +48,7 @@ class E2ETask:
         start_time = time.monotonic()
 
         try:
-            await self.target(url = self.url)
+            await self.target(url=self.url)
             self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
             return self._response("SUCCESS", "Task executed successfully.")
         except AssertionError as e:
@@ -63,5 +63,3 @@ class E2ETask:
             return self._response(
                 "ERROR", f"Task '{self.name}' encountered an error: {str(e)}"
             )
-
-        
