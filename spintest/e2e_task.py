@@ -17,7 +17,7 @@ class E2ETask:
         self.ignore = self.task.get("ignore", False)
         self.response = None
 
-    def _response(self, status: str, message: str) -> dict:
+    def _response(self, status: str, task: str, message: str) -> dict:
         """Return the response with logging."""
         result = {
             "name": self.name,
@@ -25,7 +25,7 @@ class E2ETask:
             "timestamp": time.asctime(),
             "duration_sec": self.task.get("duration_sec", None),
             "url": self.url,
-            "task": self.target.__name__,
+            "task": task,
             "ignore": self.ignore,
             "message": message,
         }
@@ -38,10 +38,14 @@ class E2ETask:
     async def run(self) -> dict:
         """Run the E2E task."""
         # Input validation
-        validated_task = input_validator_e2e_task(self.task)
-        if not validated_task:
+        try:
+            input_validator_e2e_task(self.task)
+        except ValueError as e:
+            logger.error(f"Validation error for E2ETask '{self.name}': {e}")
             return self._response(
-                "FAILURE", f"Task must follow the schema: {validated_task}."
+                "FAILURE",
+                "unknown",
+                f"Task '{self.name}' schema validation failed: {str(e)}",
             )
 
         logger.info(f"Running E2ETask: {self.name}")
@@ -50,16 +54,22 @@ class E2ETask:
         try:
             await self.target(url=self.url)
             self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
-            return self._response("SUCCESS", "Task executed successfully.")
+            return self._response(
+                "SUCCESS", self.target.__name__, "Task executed successfully."
+            )
         except AssertionError as e:
             self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
             logger.error(f"Assertion error in target for E2ETask '{self.name}': {e}")
             return self._response(
-                "FAILURE", f"Task '{self.name}' failed due to assertion error: {str(e)}"
+                "FAILURE",
+                self.target.__name__,
+                f"Task '{self.name}' failed due to assertion error: {str(e)}",
             )
         except Exception as e:
             self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
             logger.error(f"Error executing target for E2ETask '{self.name}': {e}")
             return self._response(
-                "ERROR", f"Task '{self.name}' encountered an error: {str(e)}"
+                "ERROR",
+                self.target.__name__,
+                f"Task '{self.name}' encountered an error: {str(e)}",
             )

@@ -1,6 +1,7 @@
 import pytest
 from spintest.e2e_task import E2ETask
 from unittest.mock import AsyncMock, patch
+from spintest import spintest
 
 
 @pytest.fixture
@@ -43,9 +44,8 @@ def test_e2e_task_initialization(valid_task, url):
 
 
 def test_e2e_task_response_success(valid_task, url):
-    valid_task["target"].__name__ = "mock_target"
     task = E2ETask(url, valid_task)
-    response = task._response("SUCCESS", "Task executed successfully.")
+    response = task._response("SUCCESS", "mock_target", "Task executed successfully.")
     assert response["status"] == "SUCCESS"
     assert response["message"] == "Task executed successfully."
     assert response["name"] == valid_task["name"]
@@ -53,9 +53,8 @@ def test_e2e_task_response_success(valid_task, url):
 
 
 def test_e2e_task_response_failure(valid_task, url):
-    valid_task["target"].__name__ = "mock_target"
     task = E2ETask(url, valid_task)
-    response = task._response("FAILURE", "Task failed.")
+    response = task._response("FAILURE", "mock_target", "Task failed.")
     assert response["status"] == "FAILURE"
     assert response["message"] == "Task failed."
     assert response["name"] == valid_task["name"]
@@ -65,7 +64,6 @@ def test_e2e_task_response_failure(valid_task, url):
 @pytest.mark.asyncio
 async def test_e2e_task_run_success(valid_task, url):
     valid_task["target"].return_value = True
-    valid_task["target"].__name__ = "mock_target"
     with patch("spintest.validator.input_validator_e2e_task", return_value=valid_task):
         task = E2ETask(url, valid_task)
         response = await task.run()
@@ -77,7 +75,6 @@ async def test_e2e_task_run_success(valid_task, url):
 @pytest.mark.asyncio
 async def test_e2e_task_run_failure_assertion(valid_task, url):
     valid_task["target"].side_effect = AssertionError("Test assertion error")
-    valid_task["target"].__name__ = "mock_target"
     with patch("spintest.validator.input_validator_e2e_task", return_value=valid_task):
         task = E2ETask(url, valid_task)
         response = await task.run()
@@ -88,7 +85,6 @@ async def test_e2e_task_run_failure_assertion(valid_task, url):
 @pytest.mark.asyncio
 async def test_e2e_task_run_failure_exception(valid_task, url):
     valid_task["target"].side_effect = Exception("Test exception")
-    valid_task["target"].__name__ = "mock_target"
     with patch("spintest.validator.input_validator_e2e_task", return_value=valid_task):
         task = E2ETask(url, valid_task)
         response = await task.run()
@@ -99,8 +95,41 @@ async def test_e2e_task_run_failure_exception(valid_task, url):
 @pytest.mark.asyncio
 async def test_e2e_task_initialization_invalid_task(invalid_task, url):
     invalid_task["target"] = None  # Ensure target is invalid
-    with pytest.raises(ValueError, match="E2E task must have a callable 'target'."):
+    with patch(
+        "spintest.validator.input_validator_e2e_task", return_value=invalid_task
+    ):
         task = E2ETask(url, invalid_task)
         response = await task.run()
         assert response["status"] == "FAILURE"
-        assert "must follow the schema" in response["message"]
+        assert "schema validation failed" in response["message"]
+
+
+def test_e2e_task_success():
+
+    async def target(url):
+        # Simulate a successful E2E task
+        assert url == "http://test.com"
+
+    result = spintest(["http://test.com"], [{"type": "e2e", "target": target}])
+
+    assert True is result
+
+
+def test_e2e_task_invalid_target_not_callable():
+
+    target = "invalid_target"  # Not callable
+
+    result = spintest(["http://test.com"], [{"type": "e2e", "target": target}])
+
+    assert False is result
+
+
+def test_e2e_task_invalid_target_not_async():
+
+    def target(url):
+        # Simulate a non-async target
+        assert url == "http://test.com"
+
+    result = spintest(["http://test.com"], [{"type": "e2e", "target": target}])
+
+    assert False is result

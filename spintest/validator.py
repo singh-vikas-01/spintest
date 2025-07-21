@@ -1,14 +1,14 @@
 """Input validation."""
 
 import typing
-
+import inspect
 from schema import Schema, SchemaError, Or, Optional
 
 
 TASK_SCHEMA = Schema(
     {
-        # Optional("type", default="http_request"): Or("http_request", "e2e"),
-        "method": str,
+        Optional("type", default="http_request"): Or("http_request", "e2e"),
+        Optional("method"): str,
         Optional("route", default="/"): str,
         Optional("name"): str,
         Optional("body"): dict,
@@ -51,7 +51,7 @@ def input_validator_e2e_task(task):
     if task.get("type") == "e2e":
         if "target" not in task or not callable(task["target"]):
             raise ValueError("E2E task must have a callable 'target'.")
-        else:
-            return True
+        if not inspect.iscoroutinefunction(task["target"]):
+            raise ValueError("E2E task's 'target' must be an async function.")
     else:
         raise ValueError("Task must be of type 'e2e'.")
