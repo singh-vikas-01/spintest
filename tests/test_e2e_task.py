@@ -77,7 +77,10 @@ async def test_e2e_task_run_success(valid_task, url):
 
 @pytest.mark.asyncio
 async def test_e2e_task_run_failure_assertion(valid_task, url):
-    valid_task["target"].side_effect = AssertionError("Test assertion error")
+    async def failing_target(url):
+        raise AssertionError("Test assertion error")
+
+    valid_task["target"].side_effect = failing_target
     task = E2ETask(url, valid_task)
     response = await task.run()
     assert response["status"] == "FAILURE"
