@@ -927,7 +927,7 @@ def test_task_next():
         "delay": 1,
         "ignore": False,
         "duration_sec": 42.0,
-        'type': 'http_request',
+        "type": "http_request",
     } == result["task"]
 
     assert {"__token__": None} == result["output"]
