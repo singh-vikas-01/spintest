@@ -80,7 +80,7 @@ async def test_e2e_task_run_failure_assertion(valid_task, url):
     async def failing_target(url):
         raise AssertionError("Test assertion error")
 
-    valid_task["target"].side_effect = failing_target
+    valid_task["target"] = failing_target
     task = E2ETask(url, valid_task)
     response = await task.run()
     assert response["status"] == "FAILURE"
