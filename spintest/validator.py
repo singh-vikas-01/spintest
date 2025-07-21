@@ -8,7 +8,7 @@ from schema import Schema, SchemaError, Or, Optional
 TASK_SCHEMA = Schema(
     {
         Optional("type", default="http_request"): Or("http_request", "e2e"),
-        Optional("method"): str,
+        "method": str,
         Optional("route", default="/"): str,
         Optional("name"): str,
         Optional("body"): dict,
