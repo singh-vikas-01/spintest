@@ -2,7 +2,7 @@ name: CI/CD
 on: [push]
 jobs:
   Build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.12"]
