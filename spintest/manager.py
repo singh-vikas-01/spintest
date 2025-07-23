@@ -114,7 +114,10 @@ class TaskManager(object):
                     yield self._error(critical="Invalid rollback schema.")
                     return
 
-                if task.get("type") == "e2e":
+                if task.get("target") is None:
+                    task["type"] = "http_request"
+
+                if task.get("type") != "http_request":
                     e2e_task = E2ETask(
                         url=url,
                         task=task,

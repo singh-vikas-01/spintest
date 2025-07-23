@@ -2,10 +2,8 @@ import pytest
 from spintest.e2e_task import E2ETask
 from unittest.mock import AsyncMock
 from spintest import spintest
-
-# async def target(url):
-#     # Simulate a successful E2E task
-#     assert url == "http://test.com"
+import httpretty
+import json
 
 
 @pytest.fixture
@@ -139,3 +137,66 @@ def test_e2e_task_invalid_target_not_async():
     result = spintest(["http://test.com"], [{"type": "e2e", "target": target}])
 
     assert False is result
+
+
+def test_e2e_task_invalid_type():
+
+    async def target(url):
+        # Simulate a successful E2E task
+        assert url == "http://test.com"
+
+    result = spintest(["http://test.com"], [{"type": "invalid_type", "target": target}])
+
+    assert False is result
+
+
+def test_e2e_task_missing_target():
+
+    result = spintest(["http://test.com"], [{"type": "e2e"}])
+
+    assert False is result
+
+
+def test_e2e_task_missing_type():
+
+    async def target(url):
+        # Simulate a successful E2E task
+        assert url == "http://test.com"
+
+    result = spintest(["http://test.com"], [{"target": target}])
+
+    assert False is result
+
+
+def test_e2e_task_ignore_true():
+
+    async def target(url):
+        # Simulate a successful E2E task
+        assert url == "http://test.com"
+
+    result = spintest(
+        ["http://test.com"], [{"type": "e2e", "target": target, "ignore": True}]
+    )
+
+    assert True is result
+
+
+def test_e2e_task_and_http_task():
+
+    httpretty.enable()
+    httpretty.register_uri(
+        httpretty.GET, "http://test.com/test", body=json.dumps({"foo": "bar"})
+    )
+
+    async def target(url):
+        # Simulate a successful E2E task
+        assert url == "http://test.com"
+
+    result = spintest(
+        ["http://test.com"],
+        [{"type": "e2e", "target": target}, {"method": "GET", "route": "/test"}],
+    )
+    assert True is result
+
+    httpretty.disable()
+    httpretty.reset()
