@@ -37,7 +37,6 @@ class E2ETask:
 
     async def run(self) -> dict:
         """Run the E2E task."""
-        # Input validation
         try:
             input_validator_e2e_task(self.task)
         except ValueError as e:
@@ -48,11 +47,13 @@ class E2ETask:
                 f"Task '{self.name}' schema validation failed: {str(e)}",
             )
 
+        target_inputs = self.task.get("e2e_task_fields", {})
+
         logger.info(f"Running E2ETask: {self.name}")
         start_time = time.monotonic()
 
         try:
-            await self.target(url=self.url)
+            await self.target(url=self.url, **target_inputs)
             self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
             return self._response(
                 "SUCCESS", self.target.__name__, "Task executed successfully."

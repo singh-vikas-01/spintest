@@ -22,9 +22,8 @@ TASK_SCHEMA = Schema(
             Optional("body"): Or(dict, str),
             Optional("expected_match", default="strict"): Or("partial", "strict"),
         },
-        Optional("target"): callable,  # For E2ETask
-        # inputes dict then convet to kwargs (better for end user)
-        # or better to pass as dict -no :
+        Optional("target"): callable,
+        Optional("e2e_task_fields", default={}): dict,
         Optional("fail_on"): [
             {
                 Optional("code"): int,

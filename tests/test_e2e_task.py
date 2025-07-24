@@ -181,7 +181,7 @@ def test_e2e_task_ignore_true():
     assert True is result
 
 
-def test_e2e_task_and_http_task():
+def test_e2e_task_and_http_task_success():
 
     httpretty.enable()
     httpretty.register_uri(
@@ -200,3 +200,149 @@ def test_e2e_task_and_http_task():
 
     httpretty.disable()
     httpretty.reset()
+
+
+def test_e2e_fail_and_http_success():
+
+    httpretty.enable()
+    httpretty.register_uri(
+        httpretty.GET, "http://test.com/test", body=json.dumps({"foo": "bar"})
+    )
+
+    async def target(url):
+        # Simulate a failing E2E task
+        raise Exception("Simulated failure")
+
+    result = spintest(
+        ["http://test.com"],
+        [{"type": "e2e", "target": target}, {"method": "GET", "route": "/test"}],
+    )
+    assert False is result
+
+    httpretty.disable()
+    httpretty.reset()
+
+
+def test_one_e2e_pass_and_one_fail():
+
+    async def target_pass(url):
+        # Simulate a successful E2E task
+        assert url == "http://test.com/pass"
+
+    async def target_fail(url):
+        # Simulate a failing E2E task
+        raise Exception("Simulated failure")
+
+    result = spintest(
+        ["http://test.com/pass", "http://test.com/fail"],
+        [
+            {"type": "e2e", "target": target_pass},
+            {"type": "e2e", "target": target_fail},
+        ],
+    )
+
+    assert False is result
+
+
+def test_e2e_pass_and_http_fail():
+
+    httpretty.enable()
+    httpretty.register_uri(
+        httpretty.GET, "http://test.com/test", status=500, body="Internal Server Error"
+    )
+
+    async def target(url):
+        # Simulate a successful E2E task
+        assert url == "http://test.com"
+
+    result = spintest(
+        ["http://test.com"],
+        [{"type": "e2e", "target": target}, {"method": "GET", "route": "/test"}],
+    )
+    assert False is result
+
+    httpretty.disable()
+    httpretty.reset()
+
+
+def test_e2e_with_inputs_success():
+
+    async def target(url, input_data):
+        # Simulate a successful E2E task with inputs
+        assert url == "http://test.com"
+        assert input_data == {"key": "value"}
+
+    result = spintest(
+        ["http://test.com"],
+        [
+            {
+                "type": "e2e",
+                "target": target,
+                "e2e_task_fields": {"input_data": {"key": "value"}},
+            }
+        ],
+    )
+
+    assert True is result
+
+
+def test_one_e2e_with_input_and_one_without_input():
+
+    async def target_with_input(url, input_data):
+        # Simulate a successful E2E task with inputs
+        assert url == "http://test.com/"
+        assert input_data == {"key": "value"}
+
+    async def target_without_input(url):
+        # Simulate a successful E2E task without inputs
+        assert url == "http://test.com/"
+
+    result = spintest(
+        ["http://test.com/"],
+        [
+            {
+                "type": "e2e",
+                "target": target_with_input,
+                "e2e_task_fields": {"input_data": {"key": "value"}},
+            },
+            {"type": "e2e", "target": target_without_input},
+        ],
+    )
+
+    assert True is result
+
+
+def test_e2e_with_inputs_fail():
+
+    async def target_with_input(url, a, b, c):
+        # Simulate a successful E2E task with inputs
+        assert url == "http://test.com"
+        assert a + b != c
+
+    result = spintest(
+        ["http://test.com"],
+        [
+            {
+                "type": "e2e",
+                "target": target_with_input,
+                "e2e_task_fields": {"a": 1, "b": 2, "c": 3},
+            }
+        ],
+    )
+
+    assert False is result
+
+
+def test_e2e_task_field_is_not_dict():
+
+    async def target(url, input_data):
+        # Simulate a successful E2E task with inputs
+        assert url == "http://test.com"
+        assert input_data == "not_a_dict"
+
+    result = spintest(
+        ["http://test.com"],
+        [{"type": "e2e", "target": target, "e2e_task_fields": "not_a_dict"}],
+    )
+
+    assert False is result
