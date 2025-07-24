@@ -922,6 +922,7 @@ def test_task_next():
     assert {
         "method": "GET",
         "route": "/test",
+        'e2e_task_fields': {},
         "headers": {"Accept": "application/json", "Content-Type": "application/json"},
         "retry": 0,
         "delay": 1,
