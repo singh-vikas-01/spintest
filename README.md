@@ -49,7 +49,7 @@ A single task follows the following schema :
         Optional("expected_match", default="strict"): Or("partial", "strict"),
     },
     Optional("target"): callable,
-    Optional("e2e_task_fields", default={}): dict,
+    Optional("target_input", default={}): dict,
     Optional("fail_on"): [{
         Optional("code"): int,
         Optional("body"): Or(dict, str),
@@ -87,7 +87,7 @@ A single task follows the following schema :
     async def sample_target(url):
         # Your async logic here
         pass
-- **e2e_task_fields** (optional) is applicable only for tasks of type `"e2e"`. It holds all inputs for the target function in a single dictionary.
+- **target_input** (optional) is applicable only for tasks of type `"e2e"`. It holds all inputs for the target function in a single dictionary.
 - **fail_on** (optional) is a list of error HTTP response code or response body. Once one of these error occurs, the test fails without retries.
     - **code** (optional) is the expected HTTP code.
     - **body** (optional) is an expected response body. You can put a value to *null* if you don't want to check the value of a key but you will have to set all keys. It also checks nested list and dictionary unless you put "null" instead.
@@ -142,7 +142,7 @@ tasks = [
     {
         "type": "e2e",
         "target": target,
-        "e2e_task_fields": {
+        "target_input": {
             "data": {"key": "value"}
         }
     },

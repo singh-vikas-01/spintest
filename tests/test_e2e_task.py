@@ -278,7 +278,7 @@ def test_e2e_with_inputs_success():
             {
                 "type": "e2e",
                 "target": target,
-                "e2e_task_fields": {"input_data": {"key": "value"}},
+                "target_input": {"input_data": {"key": "value"}},
             }
         ],
     )
@@ -303,7 +303,7 @@ def test_one_e2e_with_input_and_one_without_input():
             {
                 "type": "e2e",
                 "target": target_with_input,
-                "e2e_task_fields": {"input_data": {"key": "value"}},
+                "target_input": {"input_data": {"key": "value"}},
             },
             {"type": "e2e", "target": target_without_input},
         ],
@@ -325,7 +325,7 @@ def test_e2e_with_inputs_fail():
             {
                 "type": "e2e",
                 "target": target_with_input,
-                "e2e_task_fields": {"a": 1, "b": 2, "c": 3},
+                "target_input": {"a": 1, "b": 2, "c": 3},
             }
         ],
     )
@@ -342,7 +342,7 @@ def test_e2e_task_field_is_not_dict():
 
     result = spintest(
         ["http://test.com"],
-        [{"type": "e2e", "target": target, "e2e_task_fields": "not_a_dict"}],
+        [{"type": "e2e", "target": target, "target_input": "not_a_dict"}],
     )
 
     assert False is result

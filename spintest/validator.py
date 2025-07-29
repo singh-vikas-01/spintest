@@ -23,7 +23,7 @@ TASK_SCHEMA = Schema(
             Optional("expected_match", default="strict"): Or("partial", "strict"),
         },
         Optional("target"): callable,
-        Optional("e2e_task_fields", default={}): dict,
+        Optional("target_input", default={}): dict,
         Optional("fail_on"): [
             {
                 Optional("code"): int,

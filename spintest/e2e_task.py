@@ -47,7 +47,7 @@ class E2ETask:
                 f"Task '{self.name}' schema validation failed: {str(e)}",
             )
 
-        target_inputs = self.task.get("e2e_task_fields", {})
+        target_inputs = self.task.get("target_input", {})
 
         logger.info(f"Running E2ETask: {self.name}")
         start_time = time.monotonic()
