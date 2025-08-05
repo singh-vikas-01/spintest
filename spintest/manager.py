@@ -121,7 +121,6 @@ class TaskManager(object):
                     e2e_task = E2ETask(
                         url=url,
                         task=task,
-                        # **task.get("kwargs", {})
                     )
                     result = await e2e_task.run()
                 else:
