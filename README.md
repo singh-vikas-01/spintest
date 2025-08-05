@@ -114,7 +114,7 @@ tasks = [
     {
         "method": "GET",
         "route": "test",
-    }
+    },
     {
         "type": "e2e", 
         "target": target
@@ -132,10 +132,11 @@ Here is another example with inputs for the e2e task:
 ```python
 from spintest import spintest
 
-async def target(url, data):
+async def target(url, data, data2):
     # Simulate a successful E2E task
     assert url == "http://example.com"
     assert data == {"key": "value"}
+    assert data2 == {"key2": "value2"}
 
 urls = ["http://example.com"]
 tasks = [
@@ -143,7 +144,8 @@ tasks = [
         "type": "e2e",
         "target": target,
         "target_input": {
-            "data": {"key": "value"}
+            "data": {"key": "value"},
+            "data2": {"key2": "value2"},
         }
     },
 ]

@@ -286,6 +286,31 @@ def test_e2e_with_inputs_success():
     assert True is result
 
 
+def test_e2e_with_multiple_inputs_success():
+
+    async def target(url, input_data1, input_data2):
+        # Simulate a successful E2E task with multiple inputs
+        assert url == "http://test.com"
+        assert input_data1 == {"key1": "value1"}
+        assert input_data2 == {"key2": "value2"}
+
+    result = spintest(
+        ["http://test.com"],
+        [
+            {
+                "type": "e2e",
+                "target": target,
+                "target_input": {
+                    "input_data1": {"key1": "value1"},
+                    "input_data2": {"key2": "value2"},
+                },
+            }
+        ],
+    )
+
+    assert True is result
+
+
 def test_one_e2e_with_input_and_one_without_input():
 
     async def target_with_input(url, input_data):

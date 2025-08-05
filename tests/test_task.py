@@ -922,7 +922,7 @@ def test_task_next():
     assert {
         "method": "GET",
         "route": "/test",
-        'target_input': {},
+        "target_input": {},
         "headers": {"Accept": "application/json", "Content-Type": "application/json"},
         "retry": 0,
         "delay": 1,
