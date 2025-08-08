@@ -1,20 +1,21 @@
 import time
 import json
 from spintest.validator import input_validator_e2e_task
-
 from spintest import logger
+from jinja2 import Template
 
 
 class E2ETask:
     """E2E Task handler."""
 
-    def __init__(self, url: str, task: dict):
+    def __init__(self, url: str, task: dict, output: dict = None):
         """Initialization of `E2ETask` class."""
         self.url = url
         self.task = task
         self.name = task.get("name")
         self.target = task.get("target")
         self.ignore = self.task.get("ignore", False)
+        self.output = output
         self.response = None
 
     def _response(self, status: str, task: str, message: str) -> dict:
@@ -33,6 +34,7 @@ class E2ETask:
         log_level = {"SUCCESS": logger.info, "FAILURE": logger.error}
         log_level.get(status, logger.critical)(json.dumps(result, indent=4))
 
+        result["output"] = self.output
         return result
 
     async def run(self) -> dict:
@@ -49,12 +51,30 @@ class E2ETask:
 
         target_inputs = self.task.get("target_input", {})
 
+        if self.output:
+            template = Template(json.dumps(target_inputs))
+            target_inputs = json.loads(template.render(**self.output))
+            if isinstance(target_inputs, str):
+                target_inputs = target_inputs.replace("'", '"')
+                try:
+                    target_inputs = json.loads(target_inputs)
+                except json.JSONDecodeError:
+                    return self._response(
+                        "FAILURE",
+                        "unknown",
+                        f"Task '{self.name}' failed to parse target inputs.",
+                    )
+
         logger.info(f"Running E2ETask: {self.name}")
         start_time = time.monotonic()
 
         try:
-            await self.target(url=self.url, **target_inputs)
+            target_output = await self.target(url=self.url, **target_inputs)
             self.task["duration_sec"] = round(time.monotonic() - start_time, 2)
+            output_variable = self.task.get("output")
+            if output_variable:
+                self.output[output_variable] = target_output
+
             return self._response(
                 "SUCCESS", self.target.__name__, "Task executed successfully."
             )

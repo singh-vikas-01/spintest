@@ -118,17 +118,17 @@ class TaskManager(object):
                     task["type"] = "http_request"
 
                 if task.get("type") != "http_request":
-                    e2e_task = E2ETask(
+                    result = await E2ETask(
                         url=url,
                         task=task,
-                    )
-                    result = await e2e_task.run()
+                        output=self.outputs[0].copy(),
+                    ).run()
                 else:
                     result = await Task(
                         url, task, output=self.outputs[0].copy(), verify=self.verify
                     ).run()
 
-                    self.outputs = [result["output"]]
+                self.outputs = [result["output"]]
 
                 yield [result]
                 if result["status"] != "SUCCESS" and result["ignore"] is False:

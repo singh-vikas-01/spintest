@@ -371,3 +371,90 @@ def test_e2e_task_field_is_not_dict():
     )
 
     assert False is result
+
+
+def test_e2e_task_with_rollback_success():
+    async def target(url):
+        # Simulate a successful E2E task
+        assert url == "http://test.com"
+
+    async def target_rollback(url):
+        # Simulate a successful rollback task
+        assert url == "http://test.com"
+
+    tasks = [
+        {
+            "type": "e2e",
+            "name": "main_task",
+            "target": target,
+            "rollback": ["rollback_task"],
+        },
+        {
+            "type": "e2e",
+            "name": "rollback_task",
+            "target": target_rollback,
+            "ignore": True,
+        },
+    ]
+
+    result = spintest(["http://test.com"], tasks)
+
+    assert True is result
+
+
+def test_target_with_output():
+    async def target(url):
+        return {"result": "success"}
+
+    async def target_check_output(url, result):
+        assert url == "http://test.com"
+        assert result == "success"
+
+    tasks = [
+        {
+            "type": "e2e",
+            "target": target,
+            "target_input": {},
+            "output": "task_output",
+        },
+        {
+            "type": "e2e",
+            "target": target_check_output,
+            "target_input": "{{ task_output }}",
+        },
+    ]
+
+    result = spintest(["http://test.com"], tasks)
+
+    assert result is True
+
+
+def test_target_with_output_and_more_input():
+    async def target(url):
+        return {"result": "success"}
+
+    async def target_check_output(url, task_output, key):
+        assert url == "http://test.com"
+        assert task_output == "{'result': 'success'}"
+        assert key == "extra_value"
+
+    tasks = [
+        {
+            "type": "e2e",
+            "target": target,
+            "target_input": {},
+            "output": "task_output",
+        },
+        {
+            "type": "e2e",
+            "target": target_check_output,
+            "target_input": {
+                "task_output": "{{ task_output }}",
+                "key": "extra_value",
+            },
+        },
+    ]
+
+    result = spintest(["http://test.com"], tasks)
+
+    assert result is True
