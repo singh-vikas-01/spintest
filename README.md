@@ -82,11 +82,14 @@ A single task follows the following schema :
     - Defines the asynchronous function (`async def`) to be executed during the E2E task.  
     - The function must accept the `url` and other parameters and handle the task logic.  
     - The `target` must be a callable and an asynchronous coroutine function.  
+    - The function can optionally return a dictionary (`dict`) containing additional data or results.  
     - Example:  
     ```python
     async def sample_target(url):
         # Your async logic here
-        pass
+        # Optionally return a dictionary
+        return {"key": "value"}
+    ```
 - **target_input** (optional) is applicable only for tasks of type `"e2e"`. It holds all inputs for the target function in a single dictionary.
 - **fail_on** (optional) is a list of error HTTP response code or response body. Once one of these error occurs, the test fails without retries.
     - **code** (optional) is the expected HTTP code.
@@ -127,31 +130,35 @@ assert True is result
 
 This test will perform a GET call into `https://test.com/test` and expect a return code between `200` and `299` included, and execute the `target` function.
 
-Here is another example with inputs for the e2e task:
+Here is another example with input and output for the e2e task:
 
 ```python
 from spintest import spintest
 
-async def target(url, data, data2):
-    # Simulate a successful E2E task
-    assert url == "http://example.com"
-    assert data == {"key": "value"}
-    assert data2 == {"key2": "value2"}
+async def target(url):
+        return {"result": "success"}
 
-urls = ["http://example.com"]
+async def target_check_output(url, result):
+    assert url == "http://test.com"
+    assert result == "success"
+
 tasks = [
     {
         "type": "e2e",
         "target": target,
-        "target_input": {
-            "data": {"key": "value"},
-            "data2": {"key2": "value2"},
-        }
+        "target_input": {},
+        "output": "task_output",
+    },
+    {
+        "type": "e2e",
+        "target": target_check_output,
+        "target_input": "{{ task_output }}",
     },
 ]
 
-result = spintest(urls, tasks)
-assert True is result
+result = spintest(["http://test.com"], tasks)
+
+assert result is True
 ```
 
 Here is another example with an interaction between two routes :

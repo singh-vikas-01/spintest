@@ -14,9 +14,7 @@ class E2ETask:
         self.task = task
         self.name = task.get("name")
         self.target = task.get("target")
-        self.ignore = self.task.get("ignore", False)
         self.output = output
-        self.response = None
 
     def _response(self, status: str, task: str, message: str) -> dict:
         """Return the response with logging."""
@@ -27,7 +25,7 @@ class E2ETask:
             "duration_sec": self.task.get("duration_sec", None),
             "url": self.url,
             "task": task,
-            "ignore": self.ignore,
+            "ignore": self.task.get("ignore", False),
             "message": message,
         }
 

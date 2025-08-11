@@ -41,8 +41,6 @@ def test_e2e_task_initialization(valid_task, url):
     assert task.task == valid_task
     assert task.name == valid_task["name"]
     assert task.target == valid_task["target"]
-    assert task.ignore == valid_task["ignore"]
-    assert task.response is None
 
 
 def test_e2e_task_response_success(valid_task, url):
