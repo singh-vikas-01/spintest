@@ -85,7 +85,7 @@ async def test_e2e_task_run_failure_assertion(valid_task, url):
     assert response["status"] == "FAILURE"
     assert (
         response["message"]
-        == f"Task '{valid_task["name"]}' failed due to assertion error: "
+        == f"Task '{valid_task['name']}' failed due to assertion error: "
         "Test assertion error"
     )
 
@@ -101,7 +101,7 @@ async def test_e2e_task_run_failure_exception(valid_task, url):
     assert response["status"] == "ERROR"
     assert (
         response["message"]
-        == f"Task '{valid_task["name"]}' encountered an error: Test exception"
+        == f"Task '{valid_task['name']}' encountered an error: Test exception"
     )
 
 
@@ -112,7 +112,7 @@ async def test_e2e_task_initialization_invalid_task(invalid_task, url):
     assert response["status"] == "FAILURE"
     assert (
         response["message"]
-        == f"Task '{invalid_task["name"]}' schema validation failed: "
+        == f"Task '{invalid_task['name']}' schema validation failed: "
         "E2E task must have a callable 'target'."
     )
 
