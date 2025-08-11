@@ -83,7 +83,11 @@ async def test_e2e_task_run_failure_assertion(valid_task, url):
     task = E2ETask(url, valid_task)
     response = await task.run()
     assert response["status"] == "FAILURE"
-    assert response["message"] == f"Task '{valid_task["name"]}' failed due to assertion error: Test assertion error"
+    assert (
+        response["message"]
+        == f"Task '{valid_task["name"]}' failed due to assertion error: "
+        "Test assertion error"
+    )
 
 
 @pytest.mark.asyncio
@@ -95,7 +99,10 @@ async def test_e2e_task_run_failure_exception(valid_task, url):
     task = E2ETask(url, valid_task)
     response = await task.run()
     assert response["status"] == "ERROR"
-    assert response["message"] == f"Task '{valid_task["name"]}' encountered an error: Test exception"
+    assert (
+        response["message"]
+        == f"Task '{valid_task["name"]}' encountered an error: Test exception"
+    )
 
 
 @pytest.mark.asyncio
@@ -103,7 +110,11 @@ async def test_e2e_task_initialization_invalid_task(invalid_task, url):
     task = E2ETask(url, invalid_task)
     response = await task.run()
     assert response["status"] == "FAILURE"
-    assert response["message"] == f"Task '{invalid_task["name"]}' schema validation failed: E2E task must have a callable 'target'."
+    assert (
+        response["message"]
+        == f"Task '{invalid_task["name"]}' schema validation failed: "
+        "E2E task must have a callable 'target'."
+    )
 
 
 def test_e2e_task_success():
